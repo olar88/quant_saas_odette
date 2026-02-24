@@ -1,10 +1,54 @@
 import Link from "next/link";
-import { LayoutDashboard, Users, PieChart } from "lucide-react";
+import { LayoutDashboard, Users, PieChart, Settings, Shield } from "lucide-react";
+import type { UserRole } from "@/lib/actions/users";
 
-export function Sidebar() {
+const roleLabels: Record<UserRole, string> = {
+    super_admin: "超級管理員",
+    manager: "客戶經理",
+    viewer: "唯讀觀察員",
+};
+
+interface SidebarProps {
+    userRole?: UserRole;
+    userName?: string;
+    avatarSeed?: string;
+}
+
+export function Sidebar({ userRole = "viewer", userName = "User", avatarSeed = "Felix" }: SidebarProps) {
+    const isSuperAdmin = userRole === "super_admin";
+    const canWrite = userRole !== "viewer";
+
+    const navLinks = [
+        {
+            href: "/",
+            label: "總覽儀表板",
+            Icon: LayoutDashboard,
+            show: true,
+        },
+        {
+            href: "/customers",
+            label: "客戶列表",
+            Icon: Users,
+            show: true,
+        },
+        {
+            href: "/funds",
+            label: "資金報表",
+            Icon: PieChart,
+            show: canWrite, // manager and above
+        },
+        {
+            href: "/settings/profile",
+            label: "用戶管理",
+            Icon: Shield,
+            show: isSuperAdmin, // super_admin only
+        },
+    ];
+
     return (
         <aside className="w-20 md:w-64 glass-sidebar fixed h-full flex flex-col justify-between py-6 transition-all duration-300 z-20">
             <div>
+                {/* Logo */}
                 <div className="px-6 mb-10 flex items-center gap-3">
                     <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-primary to-brand-accent flex items-center justify-center text-white font-bold text-lg shadow-lg">
                         Q
@@ -14,44 +58,57 @@ export function Sidebar() {
                     </span>
                 </div>
 
-                <nav className="space-y-2 px-4">
-                    <Link
-                        href="/"
-                        className="flex items-center gap-4 px-4 py-3 rounded-2xl bg-white/60 text-brand-primary font-semibold shadow-sm transition-all"
-                    >
-                        <LayoutDashboard className="w-5 h-5 flex-shrink-0" />
-                        <span className="hidden md:block">總覽儀表板</span>
-                    </Link>
-                    <Link
-                        href="/clients"
-                        className="flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-white/40 text-slate-500 transition-all"
-                    >
-                        <Users className="w-5 h-5 flex-shrink-0" />
-                        <span className="hidden md:block">客戶列表</span>
-                    </Link>
-                    <Link
-                        href="/funds"
-                        className="flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-white/40 text-slate-500 transition-all"
-                    >
-                        <PieChart className="w-5 h-5 flex-shrink-0" />
-                        <span className="hidden md:block">資金報表</span>
-                    </Link>
+                {/* Role Badge */}
+                {isSuperAdmin && (
+                    <div className="mx-4 mb-4 hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-brand-primary/10 border border-brand-primary/20">
+                        <Shield className="w-3.5 h-3.5 text-brand-primary" />
+                        <span className="text-xs font-bold text-brand-primary">Super Admin</span>
+                    </div>
+                )}
+
+                {/* Navigation */}
+                <nav className="space-y-1 px-4">
+                    {navLinks
+                        .filter((link) => link.show)
+                        .map(({ href, label, Icon }) => (
+                            <Link
+                                key={href}
+                                href={href}
+                                className="flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-white/40 text-slate-500 transition-all"
+                            >
+                                <Icon className="w-5 h-5 flex-shrink-0" />
+                                <span className="hidden md:block">{label}</span>
+                            </Link>
+                        ))}
                 </nav>
             </div>
 
-            <div className="px-6">
-                <div className="flex items-center gap-3 p-3 glass-card rounded-2xl cursor-pointer hover:bg-white/50 transition border-none shadow-sm">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                        src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-                        className="w-8 h-8 rounded-full bg-white shadow-sm"
-                        alt="Admin"
-                    />
-                    <div className="hidden md:block">
-                        <p className="text-sm font-bold text-slate-700">Odette Liu</p>
-                        <p className="text-xs text-slate-400">超級管理員</p>
+            {/* User Profile */}
+            <div className="px-4 space-y-2">
+                {/* Settings link */}
+                <Link
+                    href="/settings/profile"
+                    className="flex items-center gap-4 px-4 py-2.5 rounded-2xl hover:bg-white/40 text-slate-400 transition-all"
+                >
+                    <Settings className="w-4 h-4 flex-shrink-0" />
+                    <span className="hidden md:block text-sm">設定</span>
+                </Link>
+
+                {/* User card */}
+                <Link href="/settings/profile">
+                    <div className="flex items-center gap-3 p-3 glass-card rounded-2xl cursor-pointer hover:bg-white/50 transition border-none shadow-sm">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`}
+                            className="w-8 h-8 rounded-full bg-white shadow-sm flex-shrink-0"
+                            alt={userName}
+                        />
+                        <div className="hidden md:block min-w-0">
+                            <p className="text-sm font-bold text-slate-700 truncate">{userName}</p>
+                            <p className="text-xs text-slate-400">{roleLabels[userRole]}</p>
+                        </div>
                     </div>
-                </div>
+                </Link>
             </div>
         </aside>
     );
