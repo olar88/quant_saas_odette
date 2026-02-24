@@ -1,13 +1,15 @@
 import { GlassCard } from "@/components/ui/glass-card";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Button } from "@/components/ui/button";
 import { User, Shield, Key } from "lucide-react";
 
 export default function ProfilePage() {
     return (
         <div className="max-w-4xl mx-auto space-y-8">
-            <div>
-                <h2 className="text-2xl font-bold text-slate-800">個人資料設定</h2>
-                <p className="text-slate-500 text-sm mt-1">管理您的帳戶資訊與安全設定</p>
-            </div>
+            <PageHeader
+                title="個人資料設定"
+                subtitle="管理您的帳戶資訊與安全設定"
+            />
 
             <GlassCard className="p-8 rounded-[2rem] space-y-8">
                 <div className="flex items-center gap-6 border-b border-gray-200/50 pb-8">
@@ -40,12 +42,8 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="pt-4 flex gap-4">
-                        <button type="button" className="px-6 py-2.5 bg-slate-800 text-white rounded-xl shadow-lg hover:bg-slate-900 transition font-medium">
-                            Save Changes
-                        </button>
-                        <button type="button" className="px-6 py-2.5 glass-card rounded-xl text-slate-600 hover:bg-white/50 transition font-medium">
-                            Cancel
-                        </button>
+                        <Button type="button">Save Changes</Button>
+                        <Button type="button" color="secondary">Cancel</Button>
                     </div>
                 </form>
             </GlassCard>
@@ -67,7 +65,7 @@ export default function ProfilePage() {
                                 <p className="text-xs text-slate-400">Last changed 3 months ago</p>
                             </div>
                         </div>
-                        <button className="text-sm text-brand-primary font-medium hover:underline">Update</button>
+                        <Button variant="text" color="primary" size="small">Update</Button>
                     </div>
                 </div>
             </GlassCard>

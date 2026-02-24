@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
-import { LayoutDashboard, Users, PieChart, Settings, Shield } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { LayoutDashboard, Users, PieChart, Settings, Shield, FileText } from "lucide-react";
 import type { UserRole } from "@/lib/actions/users";
 
 const roleLabels: Record<UserRole, string> = {
@@ -15,6 +18,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ userRole = "viewer", userName = "User", avatarSeed = "Felix" }: SidebarProps) {
+    const pathname = usePathname();
     const isSuperAdmin = userRole === "super_admin";
     const canWrite = userRole !== "viewer";
 
@@ -24,26 +28,43 @@ export function Sidebar({ userRole = "viewer", userName = "User", avatarSeed = "
             label: "總覽儀表板",
             Icon: LayoutDashboard,
             show: true,
+            /** Match exact / only */
+            exact: true,
         },
         {
             href: "/customers",
             label: "客戶列表",
             Icon: Users,
             show: true,
+            exact: false,
         },
         {
             href: "/funds",
             label: "資金報表",
             Icon: PieChart,
-            show: canWrite, // manager and above
+            show: canWrite,
+            exact: false,
+        },
+        {
+            href: "/settings/system-logs",
+            label: "系統日誌",
+            Icon: FileText,
+            show: isSuperAdmin,
+            exact: false,
         },
         {
             href: "/settings/profile",
             label: "用戶管理",
             Icon: Shield,
-            show: isSuperAdmin, // super_admin only
+            show: isSuperAdmin,
+            exact: false,
         },
     ];
+
+    const isActive = (href: string, exact: boolean) => {
+        if (exact) return pathname === href;
+        return pathname === href || pathname.startsWith(href + "/");
+    };
 
     return (
         <aside className="w-20 md:w-64 glass-sidebar fixed h-full flex flex-col justify-between py-6 transition-all duration-300 z-20">
@@ -70,16 +91,22 @@ export function Sidebar({ userRole = "viewer", userName = "User", avatarSeed = "
                 <nav className="space-y-1 px-4">
                     {navLinks
                         .filter((link) => link.show)
-                        .map(({ href, label, Icon }) => (
-                            <Link
-                                key={href}
-                                href={href}
-                                className="flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-white/40 text-slate-500 transition-all"
-                            >
-                                <Icon className="w-5 h-5 flex-shrink-0" />
-                                <span className="hidden md:block">{label}</span>
-                            </Link>
-                        ))}
+                        .map(({ href, label, Icon, exact }) => {
+                            const active = isActive(href, exact);
+                            return (
+                                <Link
+                                    key={href}
+                                    href={href}
+                                    className={`flex items-center gap-4 px-4 py-3 rounded-2xl transition-all ${active
+                                            ? "bg-white/60 text-brand-primary font-semibold shadow-sm"
+                                            : "hover:bg-white/40 text-slate-500"
+                                        }`}
+                                >
+                                    <Icon className="w-5 h-5 flex-shrink-0" />
+                                    <span className="hidden md:block">{label}</span>
+                                </Link>
+                            );
+                        })}
                 </nav>
             </div>
 
@@ -88,7 +115,10 @@ export function Sidebar({ userRole = "viewer", userName = "User", avatarSeed = "
                 {/* Settings link */}
                 <Link
                     href="/settings/profile"
-                    className="flex items-center gap-4 px-4 py-2.5 rounded-2xl hover:bg-white/40 text-slate-400 transition-all"
+                    className={`flex items-center gap-4 px-4 py-2.5 rounded-2xl transition-all ${pathname.startsWith("/settings/profile")
+                            ? "bg-white/50 text-brand-primary"
+                            : "hover:bg-white/40 text-slate-400"
+                        }`}
                 >
                     <Settings className="w-4 h-4 flex-shrink-0" />
                     <span className="hidden md:block text-sm">設定</span>
